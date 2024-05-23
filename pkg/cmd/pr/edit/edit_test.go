@@ -362,8 +362,9 @@ func Test_editRun(t *testing.T) {
 			httpStubs: func(reg *httpmock.Registry) {
 				mockRepoMetadata(reg, false)
 				mockPullRequestUpdate(reg)
-				mockPullRequestReviewersUpdate(reg)
+				mockPullRequestUpdateAssignee(reg)
 				mockPullRequestUpdateLabels(reg)
+				mockPullRequestReviewersUpdate(reg)
 				mockProjectV2ItemUpdate(reg)
 			},
 			stdout: "https://github.com/OWNER/REPO/pull/123\n",
@@ -416,6 +417,7 @@ func Test_editRun(t *testing.T) {
 			httpStubs: func(reg *httpmock.Registry) {
 				mockRepoMetadata(reg, true)
 				mockPullRequestUpdate(reg)
+				mockPullRequestUpdateAssignee(reg)
 				mockPullRequestUpdateLabels(reg)
 				mockProjectV2ItemUpdate(reg)
 			},
@@ -494,6 +496,7 @@ func mockRepoMetadata(reg *httpmock.Registry, skipReviewers bool) {
 		{ "data": { "repository": { "assignableUsers": {
 			"nodes": [
 				{ "login": "hubot", "id": "HUBOTID" },
+				{ "login": "octocat", "id": "OCTOCATID" },
 				{ "login": "MonaLisa", "id": "MONAID" }
 			],
 			"pageInfo": { "hasNextPage": false }
@@ -620,6 +623,15 @@ func mockPullRequestUpdateLabels(reg *httpmock.Registry) {
 		{ "data": { "removeLabelsFromLabelable": { "__typename": "" } } }`,
 			func(inputs map[string]interface{}) {}),
 	)
+}
+
+func mockPullRequestUpdateAssignee(reg *httpmock.Registry) {
+	reg.Register(
+		httpmock.GraphQL(`mutation AssigneeAdd\b`),
+		httpmock.StringResponse(`{}`))
+	reg.Register(
+		httpmock.GraphQL(`mutation AssigneeRemove\b`),
+		httpmock.StringResponse(`{}`))
 }
 
 func mockProjectV2ItemUpdate(reg *httpmock.Registry) {
